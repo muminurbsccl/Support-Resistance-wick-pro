@@ -46,11 +46,16 @@ key-level confluence, minimum retest depth.
 | Entry mode | Limit pullback at 50% of the confirmation candle, valid 3 bars | Biggest single improvement (PF 1.21 → 1.46 alone). Smaller risk, same price move = more R. |
 | Min impulse after break | 0.5 × zone height within 5 bars | Faster verification keeps the freshest zones. |
 | Time stop | 12 bars after fill if TP1 not hit | Cuts stale trades before they become full losers. |
-| Max trades per day | 2 | Avoids stacking losses on choppy days. |
-| Session | 03:00–16:00 New York | 08:00–16:00 gives a higher PF (≈2.4) with ~40% fewer trades. |
+| Max trades per day | 1 | The first valid setup of the day is the best one; later ones underperform. |
+| Rejection wick | ≥ 45% of the confirmation candle | Stronger rejection, fewer marginal retests. |
+| Swing lookback | 30 bars | A 30-bar swing is a more meaningful level than a 20-bar one. |
+| Session | 03:00–16:00 New York | 08:00–16:00 gives a higher PF (≈2.6) with ~40% fewer trades. |
 
-Result on 5m with a 0.25-point spread: 127 trades/year, profit factor 2.05, +0.43R per
-trade, max drawdown about 7R. On 15m: profit factor 1.4. Execution was verified trade by
+Result on 5m with a 0.25-point spread: 73 trades/year, profit factor 2.27, +0.48R per
+trade, and above 2.0 in both halves of the year, on 15m, and on the recent two months.
+For more trades (≈127/year, PF ≈2.05) set Max trades per day = 2, lookback = 20, rejection
+wick = 0.40. For a higher PF with smaller partials (≈2.8, same expectancy) set TP1 = 1.5
+and TP2 = 4.0. Execution was verified trade by
 trade against a TradingView OANDA run (fills, TP1/TP2, stops and time stops all matched).
 
 Sizing note: with a fixed 0.1 lot (10 oz) on a $1,000 account the same year nets about
