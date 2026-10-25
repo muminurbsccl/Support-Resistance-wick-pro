@@ -49,8 +49,12 @@ key-level confluence, minimum retest depth.
 | Max trades per day | 2 | Avoids stacking losses on choppy days. |
 | Session | 03:00–16:00 New York | 08:00–16:00 gives a higher PF (≈2.4) with ~40% fewer trades. |
 
-Result on 5m with a 0.25-point spread: 125 trades/year, profit factor 1.92, +0.40R per
-trade, 9 of 13 months positive, max drawdown 7.3R. On 15m: profit factor 1.27.
+Result on 5m with a 0.25-point spread: 127 trades/year, profit factor 2.05, +0.43R per
+trade, max drawdown about 7R. On 15m: profit factor 1.4. Execution was verified trade by
+trade against a TradingView OANDA run (fills, TP1/TP2, stops and time stops all matched).
+
+Sizing note: with a fixed 0.1 lot (10 oz) on a $1,000 account the same year nets about
++$3,600 but with a $593 max drawdown and a $154 worst trade. 0.03 lot keeps risk near 2%.
 Past performance is not a guarantee; re-validate on your broker's feed.
 
 ## Usage
