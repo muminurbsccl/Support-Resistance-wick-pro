@@ -1,0 +1,12 @@
+{
+  "entry_mode": "limit50", "limit_frac": 0.5, "entry_valid_bars": 3,
+  "min_impulse_mult": 0.5, "max_impulse_bars": 5, "max_break_bars": 5,
+  "time_stop_bars": 12, "max_trades_day": 1,
+  "ib_tol_atr": 0.02, "sweep_wick_pct": 0.40, "rej_wick_pct": 0.45, "swing_lookback": 30,
+  "confirm_mode": "wick", "confirm_close_outside": true, "allow_deep_sweep": true, "confirm_window": 3,
+  "level_mode": "sweep", "min_zone_atr": 0.15, "max_zone_atr": 1.0, "max_zone_age": 200,
+  "sl_buffer_ticks": 10, "min_risk_atr": 0.30, "max_risk_atr": 2.0,
+  "tp1_rr": 1.5, "tp1_qty": 0.5, "tp2_rr": 4.0, "move_to_be": true, "be_lock_r": 0.0,
+  "use_trend": false, "use_session": true, "session": ["03:00", "16:00"],
+  "spread": 0.25, "risk_dollars": 100.0, "tick": 0.001
+}
