@@ -54,8 +54,10 @@ key-level confluence, minimum retest depth.
 Result on 5m with a 0.25-point spread: 73 trades/year, profit factor 2.27, +0.48R per
 trade, and above 2.0 in both halves of the year, on 15m, and on the recent two months.
 For more trades (≈127/year, PF ≈2.05) set Max trades per day = 2, lookback = 20, rejection
-wick = 0.40. For a higher PF with smaller partials (≈2.8, same expectancy) set TP1 = 1.5
-and TP2 = 4.0. Execution was verified trade by
+wick = 0.40. The default **Target profile** is 1:1.5 book / 1:4 final (PF ≈2.8, win rate 67%, same
+trades and similar net R as the method's 1:2 / 1:3, which is one click away in the inputs).
+Loss streaks in the backtest year: max 5 in a row, three streaks of 3 or more. At 0.1 lot on
+$1,000 a 5-loss streak is roughly −$300, so size accordingly. Execution was verified trade by
 trade against a TradingView OANDA run (fills, TP1/TP2, stops and time stops all matched).
 
 Sizing note: with a fixed 0.1 lot (10 oz) on a $1,000 account the same year nets about
