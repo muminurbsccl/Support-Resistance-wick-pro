@@ -5,6 +5,86 @@ inside-bar / fakeout-wick pinpoint entry. No external libraries.
 
 File: `gold_secret_inside_bar_fakeout_wick_strategy.pine`
 
+## 🤖 goldib – Telegram signal bot (Windows · macOS · Linux)
+
+`goldib` is a small Rust program that watches **OANDA:XAUUSD 5m** (the same candles as your
+TradingView chart, no account needed), runs this strategy on every closed candle and posts each
+signal with **entry, SL, TP1 and TP2** to your Telegram channel, followed by fill, TP, stop and
+time-stop updates. It also contains the backtester that produced the results below.
+
+**Same signals as the backtest.** The strategy engine (`src/engine.rs`) is a line-by-line port of
+the Python model in `backtest/sim.py`, which was checked trade by trade against TradingView's OANDA
+strategy tester. On 12 months of identical bars the Rust engine reproduces the Python model's 73
+trades exactly (same entries, stops, targets, exits and R, same signal funnel), and a regression
+test (`cargo test`) keeps it that way. The live bot and the backtester share the same engine.
+
+### Setup
+
+1. **Download** the file for your computer from the latest GitHub Actions run or release
+   (`goldib-windows-x86_64.exe`, `goldib-macos-arm64`, `goldib-macos-x86_64`, `goldib-linux-x86_64`),
+   or build it yourself with `cargo build --release`.
+2. **Telegram credentials:** put a `.env` file next to the program. It uses the **same variables as
+   GoldCatcher** (session-bias-pro), so you can copy your existing GoldCatcher `.env` unchanged:
+   ```
+   TELEGRAM_BOT_TOKEN=123456789:AA...
+   TELEGRAM_CHAT_ID=-1001234567890
+   ```
+   The bot must be an admin of the channel (or a member of the group) to post.
+3. **Check** the token and chat without posting anything: `goldib check`
+4. **Optional:** `goldib telegram-test` posts one test message; `goldib init-config` writes a
+   commented `config.toml` (lot size, time zone, message options, all strategy inputs).
+5. **Start:** `goldib` (or double-click it on Windows). Use `goldib run --dry-run` to watch the
+   messages in the console without posting. Keep it running during the trading week; it reconnects
+   on its own and only posts candles that closed after start-up.
+
+### What a signal looks like
+
+```
+🔴 SELL LIMIT · XAUUSD 5m
+Entry  4158.44
+SL     4160.65  (2.21 pts)
+TP1    4155.12  1:1.5 · book 50%, SL → entry
+TP2    4149.60  1:4
+⏳ Valid until 16:15 BDT – cancel if not filled
+⏱ Close at market if TP1 is not hit within 60 min
+📐 Resistance 4157.87–4160.64 · fakeout wick + inside bar, first retest rejected
+💵 0.10 lot: risk $22 · TP1 then BE +$17 · TP1 + TP2 +$61
+🕒 Thu 15 Oct 16:00 BDT
+```
+Follow-ups: `✅ Filled`, `⌛ Not filled – cancelled`, `🎯 TP1 hit – 50% booked, SL moved to entry`,
+`🏆 TP2 hit`, `➖ Runner stopped at entry`, `🛑 Stop loss hit`, `⏱ Time stop`, each with the
+result in R and in $ at your lot size.
+
+### Backtest results (v11 defaults, 0.25-point cost per trade, 0.1 lot)
+
+| Data | Period | Trades | Win rate | Profit factor | Net | Max drawdown |
+|---|---|---|---|---|---|---|
+| Dukascopy XAUUSD | Nov 2025 – Oct 2026 (12 months) | 67 | 66% | 2.52 (R) · 2.30 ($) | +32.6R · +$1,900 | 8.1R · $674 |
+| TradingView OANDA:XAUUSD | 4 Oct – 2 Nov 2026 | 7 | 86% | 6.27 (R) · 7.24 ($) | +5.6R · +$313 | 1.1R · $50 |
+
+10 of 12 months were positive; the longest losing streak was 5 trades. Full reports with monthly
+tables and every trade: [`docs/backtest_dukascopy_12m.md`](docs/backtest_dukascopy_12m.md) and
+[`docs/backtest_oanda_4w.md`](docs/backtest_oanda_4w.md). Reproduce them with:
+```
+goldib backtest --source dukascopy --from 2025-11-01 --to 2026-10-30   # long history, cached in ./cache
+goldib backtest --source tradingview                                   # OANDA bars, about the last 4 weeks
+goldib backtest --source tradingview --messages 5                      # also print the Telegram messages
+```
+At 0.1 lot on a $1,000 account the average risk per trade is about $66 (6.6%) and the worst
+trade lost $129, so a five-loss streak costs roughly a third of the account. Size accordingly.
+Past performance is not a guarantee.
+
+### Commands
+
+| Command | What it does |
+|---|---|
+| `goldib` / `goldib run` | Live signals → Telegram (`--dry-run` prints instead of posting) |
+| `goldib backtest` | Backtest (`--source dukascopy\|tradingview`, `--csv FILE`, `--from/--to`, `--lots`, `--spread`, `--trades-csv`, `--messages N`) |
+| `goldib check` | Verify bot token and chat id, posts nothing |
+| `goldib telegram-test` | Post a test message |
+| `goldib chat-id` | List chats the bot has seen, to find the channel id |
+| `goldib init-config` | Write a commented `config.toml` |
+
 ## 8-step workflow (mirrored on the on-chart checklist dashboard)
 
 | # | Step | Logic |
@@ -70,3 +150,7 @@ Past performance is not a guarantee; re-validate on your broker's feed.
 2. Recommended: XAUUSD, 5-minute chart. Tune the ATR clamps and buffers for other symbols.
 
 Drawings are capped (`max_zones`, `max_trade_viz`) so `max_boxes_count = 500` is never exceeded.
+
+The time stop counts from the candle the limit order actually filled on, so it closes after exactly
+`time_stop_bars` candles (earlier versions closed one candle early on limit fills). The Pine script,
+the Python model and the goldib bot now agree on this.

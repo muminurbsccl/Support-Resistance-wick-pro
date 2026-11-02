@@ -1,0 +1,88 @@
+# goldib – Gold Secret Inside-Bar & Fakeout Wick signal bot
+# Copy to config.toml (or run `goldib init-config`) and adjust. Everything is optional:
+# without a config.toml the built-in defaults below are used.
+# Secrets go in a .env file next to the program (same as GoldCatcher):
+#   TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
+
+[feed]
+# The strategy was tuned on 5-minute candles of OANDA:XAUUSD.
+timeframe_min = 5
+# Bars loaded at start-up to rebuild the zones (TradingView serves about 5,700).
+history_bars = 5000
+# Seconds after a candle's close time before it counts as closed.
+close_grace_secs = 3
+
+[feed.tradingview]
+symbol = "OANDA:XAUUSD"
+# auth_token = ""          # not needed for OANDA:XAUUSD; prefer TV_AUTH_TOKEN
+
+[telegram]
+enabled = true
+# bot_token = ""           # prefer TELEGRAM_BOT_TOKEN in .env
+# chat_id = ""             # e.g. -1001234567890 – prefer TELEGRAM_CHAT_ID in .env
+# message_thread_id = 123  # optional forum topic inside a group
+notify_startup = true
+disable_notification = false
+
+[signals]
+lots = 0.1                 # shown in messages ($ risk / reward) and used for backtest $ figures
+oz_per_lot = 100.0
+price_decimals = 2
+display_tz = "Asia/Dhaka"
+display_tz_label = "BDT"
+ticker = "XAUUSD"
+prefix = ""                # optional first line, e.g. "#gold"
+updates = true             # also post fills, missed fills, TP1/TP2, stop and time-stop updates
+
+[backtest]
+spread = 0.25              # cost per trade in price points
+cache_dir = "cache"        # downloaded Dukascopy data
+
+# ── Strategy inputs: same names and defaults as the Pine script's backtest-tuned v11 ──
+[strategy]
+tick = 0.001
+# 1) Inside bar & fakeout detection
+ib_tol_ticks = 0.0
+ib_tol_atr = 0.02          # inside-bar tolerance (× ATR) for cent-level feed differences
+ib_color = "any"           # any | colored
+swing_lookback = 30
+ctx_bars = 3               # the fakeout wick may be the mother bar or up to 2 bars before it
+sweep_wick_pct = 0.40      # sweep candle's rejection wick ≥ 40% of its range
+min_sweep_atr = 0.0
+level_mode = "sweep"       # sweep (true fakeout wicks only) | swing_or_sweep
+# 2) Zone sizing
+atr_len = 14
+min_zone_atr = 0.15
+max_zone_atr = 1.0
+# 3) Break & impulse verification
+max_break_bars = 5
+min_impulse_mult = 0.5     # move away ≥ 0.5 × zone height …
+max_impulse_bars = 5       # … within 5 bars of the break
+# 4) First retest & confirmation
+confirm_mode = "wick"      # none | color | wick | both
+rej_wick_pct = 0.45        # rejection wick ≥ 45% of the candle
+confirm_close_outside = true
+allow_deep_sweep = true
+min_retest_depth = 0.0
+confirm_window = 3
+max_zone_age = 200
+# 4b) Entry
+entry_mode = "limit"       # limit (pullback into the confirmation candle) | market
+limit_frac = 0.5           # limit at 50% of the confirmation candle
+entry_valid_bars = 3       # cancel if not filled within 3 candles
+# 5) Risk
+sl_buffer_ticks = 10.0
+tp1_rr = 1.5               # TP1 at 1:1.5 …
+tp1_qty = 0.5              # … closes 50%
+tp2_rr = 4.0               # TP2 (runner) at 1:4
+move_to_be = true          # stop to entry after TP1
+be_lock_r = 0.0
+time_stop_bars = 12        # close at market if TP1 not hit within 12 candles (60 min)
+min_risk_atr = 0.30
+max_risk_atr = 2.0
+# 6) Filters
+use_session = true
+session_start = "03:00"    # New York time
+session_end = "16:00"
+max_trades_day = 1         # trading day starts 17:00 New York
+max_zones = 50
