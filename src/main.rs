@@ -384,7 +384,24 @@ async fn run(cfg: Config, dry_run: bool) -> Result<()> {
             let now = feed::now_ms();
             for (b, ev) in &batch {
                 let late = now - (b.time + tf_ms) > 5 * 60_000;
-                for (_, m) in notifier.messages(ev) {
+                // After a feed outage, missed candles are replayed. A signal whose order can
+                // no longer be placed (market entry, or a limit past its validity) is not
+                // posted; its follow-ups then stay silent too.
+                let ev: Vec<Event> = ev
+                    .iter()
+                    .filter(|e| match e {
+                        Event::Signal(s) if late && (s.market || now > s.expires) => {
+                            tracing::warn!(
+                                "skipping expired signal from {} (feed was behind)",
+                                fmt_utc(s.time, "%d %b %H:%M UTC")
+                            );
+                            false
+                        }
+                        _ => true,
+                    })
+                    .cloned()
+                    .collect();
+                for (_, m) in notifier.messages(&ev) {
                     let m = if late {
                         format!("⏳ Delayed (feed reconnect)\n{m}")
                     } else {
