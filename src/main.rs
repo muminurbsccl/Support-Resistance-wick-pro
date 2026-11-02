@@ -108,8 +108,10 @@ fn main() -> Result<()> {
             eprintln!("\nPress Enter to close this window…");
             let _ = std::io::stdin().read_line(&mut String::new());
         }
+        // Already reported above; exit without a second copy or a backtrace.
+        std::process::exit(1);
     }
-    res
+    Ok(())
 }
 
 /// Folder of the running executable (where the release puts .env and config.toml).
