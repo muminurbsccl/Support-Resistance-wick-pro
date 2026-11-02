@@ -51,7 +51,8 @@ fn decode(raw: &[u8], day: NaiveDate) -> Result<Vec<M1>> {
         .timestamp_millis();
     let i32_at = |r: &[u8], k: usize| i32::from_be_bytes([r[k], r[k + 1], r[k + 2], r[k + 3]]);
     let mut rows = Vec::with_capacity(out.len() / 24);
-    for r in out.chunks_exact(24) {
+    for r in out.as_chunks::<24>().0 {
+        let r: &[u8] = r;
         let vol = f32::from_be_bytes([r[20], r[21], r[22], r[23]]);
         if vol <= 0.0 {
             continue;
